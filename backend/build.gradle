@@ -1,0 +1,15 @@
+dependencies {
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.2.3'
+}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'edu.bbte.idde.szim2182'
+            artifactId = 'szim2182-backend'
+            version = '1.0-SNAPSHOT'
+
+            from components.java
+        }
+    }
+}
