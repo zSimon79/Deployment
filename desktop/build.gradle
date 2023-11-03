@@ -1,0 +1,21 @@
+plugins{
+    id 'application'
+}
+application {
+    mainClassName = 'edu.bbte.idde.szim2182.desktop.Main'
+}
+dependencies {
+    implementation project(':backend')
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'edu.bbte.idde.szim2182'
+            artifactId = 'szim2182-desktop'
+            version = '1.0-SNAPSHOT'
+
+            from components.java
+        }
+    }
+}
