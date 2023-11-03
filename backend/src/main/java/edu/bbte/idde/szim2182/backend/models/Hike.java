@@ -1,27 +1,23 @@
-package edu.bbte.idde.szim2182.backend;
+package edu.bbte.idde.szim2182.backend.models;
 
-public class Hike {
-    private final int id;
+
+public class Hike extends BaseEntity {
     private final String name;
     private final String description;
-    private final int difficultyLevel;
+    private final Integer difficultyLevel;
     private final String startPoint;
     private final String endPoint;
-    private final double distance;
+    private final Double distance;
 
-    public Hike(int id, String name, String description, int difficultyLevel, String startPoint,
-                String endPoint, double distance) {
-        this.id = id;
+    public Hike(String name, String description, Integer difficultyLevel, String startPoint,
+                String endPoint, Double distance) {
+        super(0L);
         this.name = name;
         this.description = description;
         this.difficultyLevel = difficultyLevel;
         this.startPoint = startPoint;
         this.endPoint = endPoint;
         this.distance = distance;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getName() {
@@ -49,7 +45,6 @@ public class Hike {
     }
 
 
-    // toString metódus a könnyebb megjelenítéshez
     @Override
     public String toString() {
         return "Hike{"
