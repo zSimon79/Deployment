@@ -15,4 +15,6 @@ public interface CrudRepository {
     Hike update(Long id, Hike hike);
 
     void delete(Long id);
+
+
 }
