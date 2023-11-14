@@ -19,12 +19,13 @@ import java.util.List;
 public class Hikes extends HttpServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(Hikes.class);
-
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private transient MemoryCrudRepository crudRepository;
 
     @Override
     public void init() {
         LOG.info("Initializing hikes");
+        crudRepository = MemoryCrudRepository.getInstance();
     }
 
     @Override
@@ -35,7 +36,6 @@ public class Hikes extends HttpServlet {
         // jelezzük a HTTP válaszban, hogy JSON típusú kimenetet küldünk
         resp.setHeader("Content-Type", "application/json");
 
-        MemoryCrudRepository crudRepository = MemoryCrudRepository.getInstance();
         List<Hike> hikes = crudRepository.readAll();
 
         // Log each hike

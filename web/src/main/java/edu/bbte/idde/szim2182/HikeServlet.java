@@ -1,6 +1,7 @@
 package edu.bbte.idde.szim2182;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.bbte.idde.szim2182.backend.crud.CrudRepository;
 import edu.bbte.idde.szim2182.backend.crud.MemoryCrudRepository;
 import edu.bbte.idde.szim2182.backend.models.Hike;
@@ -14,17 +15,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 @WebServlet("/hikeServlet")
 public class HikeServlet extends HttpServlet {
 
-    private final CrudRepository repository =  MemoryCrudRepository.getInstance();
+    private final CrudRepository repository = MemoryCrudRepository.getInstance();
     private static final Logger LOG = LoggerFactory.getLogger(HikeServlet.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final AtomicLong idGenerator;
-    private final List<Hike> hikes = new CopyOnWriteArrayList<>();
 
     public HikeServlet() {
         super();
@@ -33,7 +32,7 @@ public class HikeServlet extends HttpServlet {
 
     @Override
     public void init() {
-        LOG.info("Initializing hikeservlet");
+        LOG.info("Initializing hikeServlet");
     }
 
     @Override
@@ -46,12 +45,16 @@ public class HikeServlet extends HttpServlet {
         // If an ID is provided, return the specific hike, otherwise return all hikes
         String idParam = req.getParameter("id");
         if (idParam != null) {
-            long id = Long.parseLong(idParam);
-            Hike hike = repository.read(id);
-            if (hike == null) {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            } else {
-                objectMapper.writeValue(resp.getOutputStream(), hike);
+            try {
+                long id = Long.parseLong(idParam);
+                Hike hike = repository.read(id);
+                if (hike == null) {
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                } else {
+                    objectMapper.writeValue(resp.getOutputStream(), hike);
+                }
+            } catch (NumberFormatException e) {
+                sendJsonError(resp, "Invalid hike ID format ");
             }
         } else {
             List<Hike> hikes = repository.readAll();
@@ -68,14 +71,14 @@ public class HikeServlet extends HttpServlet {
             Hike hike = objectMapper.readValue(req.getInputStream(), Hike.class);
             // Set a new ID for the hike
             hike.setId(idGenerator.incrementAndGet());
-            hikes.add(hike);
+            repository.create(hike);
             LOG.info("Received hike: {}", hike);
             // Respond with the created hike
             resp.setHeader("Content-Type", "application/json");
             resp.setStatus(HttpServletResponse.SC_CREATED);
             objectMapper.writeValue(resp.getOutputStream(), hike);
         } catch (IOException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            sendJsonError(resp, e.getMessage());
             LOG.error("Error creating hike: {}", e.getMessage());
         }
     }
@@ -92,13 +95,17 @@ public class HikeServlet extends HttpServlet {
                     resp.setContentType("application/json");
                     resp.getWriter().write(objectMapper.writeValueAsString(updatedHike));
                 } else {
-                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Hike with ID " + id + " not found");
+                    sendJsonError(resp, "Hike with ID " + id + " not found");
+
                 }
+            } catch (NumberFormatException e) {
+                sendJsonError(resp, "Invalid hike ID format");
+
             } catch (IOException e) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+                sendJsonError(resp, e.getMessage());
             }
         } else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hike ID is required for update");
+            sendJsonError(resp, "Hike ID is required for update");
         }
     }
 
@@ -106,11 +113,23 @@ public class HikeServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String idParam = req.getParameter("id");
         if (idParam != null) {
-            long id = Long.parseLong(idParam);
-            repository.delete(id);
-            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            try {
+                long id = Long.parseLong(idParam);
+                repository.delete(id);
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } catch (NumberFormatException e) {
+                sendJsonError(resp, "Invalid hike ID format");
+            }
         } else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hike ID is required for deletion");
+            sendJsonError(resp, "Hike ID is required for deletion");
         }
+    }
+
+    private void sendJsonError(HttpServletResponse resp, String errorMessage) throws IOException {
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        resp.setContentType("application/json");
+        ObjectNode errorNode = objectMapper.createObjectNode();
+        errorNode.put("error", errorMessage);
+        objectMapper.writeValue(resp.getOutputStream(), errorNode);
     }
 }
