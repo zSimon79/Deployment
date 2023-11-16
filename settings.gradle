@@ -1,2 +1,3 @@
-include 'backend', 'desktop'
+include 'backend', 'web'
 rootProject.name = 'szim2182-idde'
+

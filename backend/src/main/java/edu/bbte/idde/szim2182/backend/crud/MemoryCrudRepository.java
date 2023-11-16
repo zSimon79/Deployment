@@ -11,10 +11,21 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class MemoryCrudRepository implements CrudRepository {
+public final class MemoryCrudRepository implements CrudRepository {
+
     private final ConcurrentMap<Long, Hike> storage = new ConcurrentHashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(MemoryCrudRepository.class);
     private final AtomicLong idGenerator = new AtomicLong(0);
+
+    private MemoryCrudRepository() {}
+
+    private static class Holder {
+        static final MemoryCrudRepository INSTANCE = new MemoryCrudRepository();
+    }
+
+    public static MemoryCrudRepository getInstance() {
+        return Holder.INSTANCE;
+    }
 
     @Override
     public Hike create(Hike hike) { //atomic Long legyen id
