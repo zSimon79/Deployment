@@ -15,7 +15,7 @@ dependencies {
     compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '5.0.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
     implementation 'javax.servlet:jstl:1.2'
-
+    runtimeOnly 'mysql:mysql-connector-java:8.0.28'
 }
 def deploymentName = 'web'
 

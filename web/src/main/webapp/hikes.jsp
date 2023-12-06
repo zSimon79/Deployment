@@ -15,8 +15,7 @@
             <th>Name</th>
             <th>Description</th>
             <th>Difficulty</th>
-            <th>Start Point</th>
-            <th>End Point</th>
+            <th>Location</th> <!-- Assuming location details are now included -->
             <th>Distance (km)</th>
         </tr>
     </thead>
@@ -25,15 +24,17 @@
             <tr>
                 <td>${hike.name}</td>
                 <td>${hike.description}</td>
-                <td>${hike.difficulty}</td>
-                <td>${hike.startPoint}</td>
-                <td>${hike.endPoint}</td>
+                <td>${hike.difficultyLevel}</td>
+                <td>
+                    Start: ${hike.location.startPoint}<br>
+                    End: ${hike.location.endPoint}
+                </td>
                 <td>${hike.distance}</td>
             </tr>
         </c:forEach>
     </tbody>
 </table>
-<form action="Logout" method="post">
+<form action="logout" method="post">
     <input type="submit" value="Logout">
 </form>
 </body>

@@ -1,5 +1,6 @@
 package edu.bbte.idde.szim2182;
 
+import edu.bbte.idde.szim2182.backend.datasource.ApplicationConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,13 +15,17 @@ import java.io.IOException;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
+    private ApplicationConfig config;
+
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "password123";
     private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
     @Override
-    public void init() {
-        LOG.info("Initializing login");
+    public void init() throws ServletException {
+        super.init();
+        LOG.info("Initializing LoginServlet");
+        this.config = (ApplicationConfig) getServletContext().getAttribute("config");
     }
 
     @Override
@@ -28,12 +33,15 @@ public class LoginServlet extends HttpServlet {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
-        if (USERNAME.equals(username) && PASSWORD.equals(password)) {
+        String configUsername = config.getLoginConfig().getUsername();
+        String configPassword = config.getLoginConfig().getPassword();
+
+        if (configUsername.equals(username) && configPassword.equals(password)) {
             // Login success
             HttpSession session = req.getSession();
             session.setAttribute("user", username);
             // Redirect to a secure page
-            resp.sendRedirect("hikes.jsp");
+            resp.sendRedirect("hikeServlet");
         } else {
             // Login failure
             req.setAttribute("errorMessage", "Invalid username or password");
