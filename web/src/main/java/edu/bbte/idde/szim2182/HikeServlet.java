@@ -2,9 +2,9 @@ package edu.bbte.idde.szim2182;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import edu.bbte.idde.szim2182.backend.dao.DaoFactory;
 import edu.bbte.idde.szim2182.backend.dao.HikeDao;
 import edu.bbte.idde.szim2182.backend.models.Hike;
-import edu.bbte.idde.szim2182.backend.dao.JdbcDaoFactory;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,9 +27,10 @@ public class HikeServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        LOG.info("Initializing hikeServlet");
-        this.hikeDao = JdbcDaoFactory.getInstance().getHikeDao();
+        LOG.info("Initializing HikeServlet");
 
+        DaoFactory daoFactory = (DaoFactory) getServletContext().getAttribute("daoFactory");
+        this.hikeDao = daoFactory.getHikeDao();
     }
 
     @Override
@@ -57,7 +58,6 @@ public class HikeServlet extends HttpServlet {
             List<Hike> hikes = hikeDao.findAll();
             req.setAttribute("hikes", hikes);
 
-            // Forward to the JSP page
             RequestDispatcher dispatcher = req.getRequestDispatcher("/hikes.jsp");
             dispatcher.forward(req, resp);
             objectMapper.writeValue(resp.getOutputStream(), hikes);

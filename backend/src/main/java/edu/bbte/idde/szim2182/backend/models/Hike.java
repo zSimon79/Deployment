@@ -2,11 +2,10 @@ package edu.bbte.idde.szim2182.backend.models;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
+
 
 @Getter
 @Setter
-@ToString(exclude = "location")
 public class Hike extends BaseEntity {
     private String name;
     private String description;
@@ -29,20 +28,8 @@ public class Hike extends BaseEntity {
         this.distance = distance;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public int getDifficultyLevel() {
         return difficultyLevel;
-    }
-
-    public Location getLocation() {
-        return location;
     }
 
     public double getDistance() {
@@ -59,10 +46,6 @@ public class Hike extends BaseEntity {
 
     public void setDifficultyLevel(Integer difficultyLevel) {
         this.difficultyLevel = difficultyLevel;
-    }
-
-    public Long getLocationId() {
-        return locationId;
     }
 
     public void setLocationId(Long locationId) {

@@ -16,9 +16,6 @@ import java.io.IOException;
 public class LoginServlet extends HttpServlet {
 
     private ApplicationConfig config;
-
-    private static final String USERNAME = "admin";
-    private static final String PASSWORD = "password123";
     private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
     @Override

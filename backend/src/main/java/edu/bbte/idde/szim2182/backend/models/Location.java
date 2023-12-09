@@ -2,13 +2,11 @@ package edu.bbte.idde.szim2182.backend.models;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 public class Location extends BaseEntity {
     private String startPoint;
     private String endPoint;
@@ -24,17 +22,8 @@ public class Location extends BaseEntity {
         this.endPoint = endPoint;
     }
 
-
-    public String getStartPoint() {
-        return startPoint;
-    }
-
     public void setStartPoint(String startPoint) {
         this.startPoint = startPoint;
-    }
-
-    public String getEndPoint() {
-        return endPoint;
     }
 
     public void setEndPoint(String endPoint) {

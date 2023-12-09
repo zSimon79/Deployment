@@ -1,34 +1,13 @@
 package edu.bbte.idde.szim2182.backend.datasource;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
+@Data
 public class ApplicationConfig implements Serializable {
     private transient DatabaseConfig databaseConfig;
-    private LoginConfig loginConfig; // Add this field
-
+    private LoginConfig loginConfig;
     private String profile;
 
-    public DatabaseConfig getDatabaseConfig() {
-        return databaseConfig;
-    }
-
-    public void setDatabaseConfig(DatabaseConfig databaseConfig) {
-        this.databaseConfig = databaseConfig;
-    }
-
-    public String getProfile() {
-        return profile;
-    }
-
-    public void setProfile(String profile) {
-        this.profile = profile;
-    }
-
-    public LoginConfig getLoginConfig() {
-        return loginConfig;
-    }
-
-    public void setLoginConfig(LoginConfig loginConfig) {
-        this.loginConfig = loginConfig;
-    }
 }

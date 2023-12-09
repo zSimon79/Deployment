@@ -6,16 +6,16 @@ import java.util.List;
 
 import edu.bbte.idde.szim2182.backend.datasource.DataSourceUtil;
 import edu.bbte.idde.szim2182.backend.models.Location;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class JdbcLocationDao implements LocationDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcHikeDao.class);
 
     private Connection getConnection() throws SQLException {
-        //return DriverManager.getConnection("jdbc:mysql://localhost:3306/HikeServlet", "Servlet", "1234");
-
         return DataSourceUtil.getDataSource().getConnection();
     }
 
@@ -37,6 +37,7 @@ public class JdbcLocationDao implements LocationDao {
             LOG.info("Retrieved all locations successfully");
         } catch (SQLException e) {
             LOG.error("Error retrieving all locations: {}", e.getMessage(), e);
+            throw new DaoException("Error retrieving all locations: {}", e);
         }
         return locations;
     }
@@ -62,6 +63,7 @@ public class JdbcLocationDao implements LocationDao {
             }
         } catch (SQLException e) {
             LOG.error("Error finding location with ID {}: {}", id, e.getMessage(), e);
+            throw new DaoException("Error finding location: {}", e);
         }
         return null;
     }
@@ -86,6 +88,7 @@ public class JdbcLocationDao implements LocationDao {
             }
         } catch (SQLException e) {
             LOG.error("Error creating location: {}", e.getMessage(), e);
+            throw new DaoException("Error creating location: {}", e);
         }
         return null;
     }
@@ -107,6 +110,8 @@ public class JdbcLocationDao implements LocationDao {
             }
         } catch (SQLException e) {
             LOG.error("Error updating location with ID {}: {}", id, e.getMessage(), e);
+            throw new DaoException("Error updating location: {}", e);
+
         }
         return null;
     }
@@ -130,6 +135,7 @@ public class JdbcLocationDao implements LocationDao {
             }
         } catch (SQLException e) {
             LOG.error("Error finding location with name {}: {}", name, e.getMessage(), e);
+            throw new DaoException("Error finding location: {}", e);
         }
         return locations;
     }
@@ -147,6 +153,7 @@ public class JdbcLocationDao implements LocationDao {
             }
         } catch (SQLException e) {
             LOG.error("Error deleting location with ID {}: {}", id, e.getMessage(), e);
+            throw new DaoException("Error deleting location: {}", e);
         }
     }
 }

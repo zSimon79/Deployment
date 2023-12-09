@@ -4,17 +4,30 @@ import edu.bbte.idde.szim2182.backend.datasource.DataSourceUtil;
 import edu.bbte.idde.szim2182.backend.models.Hike;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class JdbcHikeDao implements HikeDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcHikeDao.class);
 
     private Connection getConnection() throws SQLException {
         return DataSourceUtil.getDataSource().getConnection();
+    }
+
+    private Hike mapRowToHike(ResultSet resultSet) throws SQLException {
+        Hike hike = new Hike();
+        hike.setId(resultSet.getLong("id"));
+        hike.setName(resultSet.getString("name"));
+        hike.setDescription(resultSet.getString("description"));
+        hike.setDifficultyLevel(resultSet.getInt("difficultyLevel"));
+        hike.setLocationId(resultSet.getLong("locationId"));
+        hike.setDistance(resultSet.getDouble("distance"));
+        return hike;
     }
 
     @Override
@@ -26,18 +39,13 @@ public class JdbcHikeDao implements HikeDao {
              ResultSet result = stmt.executeQuery()) {
 
             while (result.next()) {
-                Hike hike = new Hike();
-                hike.setId(result.getLong("id"));
-                hike.setName(result.getString("name"));
-                hike.setDescription(result.getString("description"));
-                hike.setDifficultyLevel(result.getInt("difficultyLevel"));
-                hike.setLocationId(result.getLong("locationId"));
-                hike.setDistance(result.getDouble("distance"));
+                Hike hike = mapRowToHike(result);
                 hikes.add(hike);
             }
             LOG.info("Retrieved all hikes successfully");
         } catch (SQLException e) {
             LOG.error("Error retrieving all hikes: {}", e.getMessage(), e);
+            throw new DaoException("Error retrieving all hikes: {}", e);
         }
         return hikes;
     }
@@ -51,19 +59,14 @@ public class JdbcHikeDao implements HikeDao {
             stmt.setLong(1, id);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    Hike hike = new Hike();
-                    hike.setId(result.getLong("id"));
-                    hike.setName(result.getString("name"));
-                    hike.setDescription(result.getString("description"));
-                    hike.setDifficultyLevel(result.getInt("difficultyLevel"));
-                    hike.setLocationId(result.getLong("locationId"));
-                    hike.setDistance(result.getDouble("distance"));
+                    Hike hike = mapRowToHike(result);
                     LOG.info("Found the hike with ID: {}", id);
                     return hike;
                 }
             }
         } catch (SQLException e) {
             LOG.error("Error finding hike with ID {}: {}", id, e.getMessage(), e);
+            throw new DaoException("Error finding hike", e);
         }
         return null;
     }
@@ -87,7 +90,7 @@ public class JdbcHikeDao implements HikeDao {
             }
         } catch (SQLException e) {
             LOG.error("Error inserting location: {}", e.getMessage(), e);
-            return null;
+            throw new DaoException("Error inserting location: {}", e);
         }
 
         String hikeSql = "INSERT INTO hikes (name, description, difficultyLevel, locationId, distance)"
@@ -112,6 +115,7 @@ public class JdbcHikeDao implements HikeDao {
             }
         } catch (SQLException e) {
             LOG.error("Error creating hike: {}", e.getMessage(), e);
+            throw new DaoException("Error inserting location: {}", e);
         }
         return null;
     }
@@ -138,6 +142,7 @@ public class JdbcHikeDao implements HikeDao {
             }
         } catch (SQLException e) {
             LOG.error("Error updating hike with ID {}: {}", id, e.getMessage(), e);
+            throw new DaoException("Error updating hike: {}", e);
         }
         return null;
     }
@@ -152,18 +157,13 @@ public class JdbcHikeDao implements HikeDao {
             stmt.setString(1, "%" + name + "%");
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    Hike hike = new Hike();
-                    hike.setId(result.getLong("id"));
-                    hike.setName(result.getString("name"));
-                    hike.setDescription(result.getString("description"));
-                    hike.setDifficultyLevel(result.getInt("difficultyLevel"));
-                    hike.setLocationId(result.getLong("locationId"));
-                    hike.setDistance(result.getDouble("distance"));
+                    Hike hike = mapRowToHike(result);
                     hikes.add(hike);
                 }
             }
         } catch (SQLException e) {
             LOG.error("Error finding hikes with name like {}: {}", name, e.getMessage(), e);
+            throw new DaoException("Error finding hike: {}", e);
         }
         LOG.info("Found hike(s) with name: {}", name);
         return hikes;
@@ -183,6 +183,7 @@ public class JdbcHikeDao implements HikeDao {
             }
         } catch (SQLException e) {
             LOG.error("Error deleting hike with ID {}: {}", id, e.getMessage(), e);
+            throw new DaoException("Error deleting hike: {}", e);
         }
     }
 }
