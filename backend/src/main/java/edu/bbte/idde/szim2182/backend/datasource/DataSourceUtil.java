@@ -3,23 +3,22 @@ package edu.bbte.idde.szim2182.backend.datasource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.bbte.idde.szim2182.backend.dao.DaoException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 
+@Slf4j
 public class DataSourceUtil {
 
     private static final HikariDataSource dataSource;
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceUtil.class);
 
     static {
         ApplicationConfig appConfig;
         try {
-            appConfig = ConfigLoader.loadConfig("prod");
+            appConfig = ConfigLoader.loadConfig(System.getenv("iddeVariable")); //configfactory, egyszer
         } catch (IOException e) {
-            LOG.error("Error loading configuration: {}", e.getMessage(), e);
+            log.error("Error loading configuration: {}", e.getMessage(), e);
             throw new DaoException("Error loading configuration: {}", e);
         }
         DatabaseConfig dbConfig = appConfig.getDatabaseConfig();
@@ -36,7 +35,7 @@ public class DataSourceUtil {
 
             tempDataSource = new HikariDataSource(config);
         } catch (IllegalArgumentException | IllegalStateException e) {
-            LOG.error("Configuration exception during HikariCP DataSource initialization", e);
+            log.error("Configuration exception during HikariCP DataSource initialization", e);
             throw new ExceptionInInitializerError(e);
         }
         dataSource = tempDataSource;

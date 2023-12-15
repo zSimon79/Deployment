@@ -4,19 +4,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.bbte.idde.szim2182.backend.datasource.DataSourceUtil;
 import edu.bbte.idde.szim2182.backend.models.Location;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
 
 @Slf4j
 public class JdbcLocationDao implements LocationDao {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcHikeDao.class);
+    private final DataSource dataSource;
+
+    public JdbcLocationDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     private Connection getConnection() throws SQLException {
-        return DataSourceUtil.getDataSource().getConnection();
+        return dataSource.getConnection();
     }
 
     @Override
@@ -34,9 +37,9 @@ public class JdbcLocationDao implements LocationDao {
                 location.setEndPoint(result.getString("endPoint"));
                 locations.add(location);
             }
-            LOG.info("Retrieved all locations successfully");
+            log.info("Retrieved all locations successfully");
         } catch (SQLException e) {
-            LOG.error("Error retrieving all locations: {}", e.getMessage(), e);
+            log.error("Error retrieving all locations: {}", e.getMessage(), e);
             throw new DaoException("Error retrieving all locations: {}", e);
         }
         return locations;
@@ -56,13 +59,13 @@ public class JdbcLocationDao implements LocationDao {
                     location.setId(result.getLong("id"));
                     location.setStartPoint(result.getString("startPoint"));
                     location.setEndPoint(result.getString("endPoint"));
-                    LOG.info("Found the location with ID: {}", id);
+                    log.info("Found the location with ID: {}", id);
 
                     return location;
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error finding location with ID {}: {}", id, e.getMessage(), e);
+            log.error("Error finding location with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error finding location: {}", e);
         }
         return null;
@@ -81,13 +84,13 @@ public class JdbcLocationDao implements LocationDao {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         location.setId(generatedKeys.getLong(1));
-                        LOG.info("Location created successfully: {}", location);
+                        log.info("Location created successfully: {}", location);
                         return location;
                     }
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error creating location: {}", e.getMessage(), e);
+            log.error("Error creating location: {}", e.getMessage(), e);
             throw new DaoException("Error creating location: {}", e);
         }
         return null;
@@ -105,11 +108,11 @@ public class JdbcLocationDao implements LocationDao {
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
-                LOG.info("Location updated successfully: {}", location);
+                log.info("Location updated successfully: {}", location);
                 return location;
             }
         } catch (SQLException e) {
-            LOG.error("Error updating location with ID {}: {}", id, e.getMessage(), e);
+            log.error("Error updating location with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error updating location: {}", e);
 
         }
@@ -134,7 +137,7 @@ public class JdbcLocationDao implements LocationDao {
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error finding location with name {}: {}", name, e.getMessage(), e);
+            log.error("Error finding location with name {}: {}", name, e.getMessage(), e);
             throw new DaoException("Error finding location: {}", e);
         }
         return locations;
@@ -149,10 +152,10 @@ public class JdbcLocationDao implements LocationDao {
             stmt.setLong(1, id);
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
-                LOG.info("Location deleted successfully with ID {}", id);
+                log.info("Location deleted successfully with ID {}", id);
             }
         } catch (SQLException e) {
-            LOG.error("Error deleting location with ID {}: {}", id, e.getMessage(), e);
+            log.error("Error deleting location with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error deleting location: {}", e);
         }
     }

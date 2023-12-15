@@ -1,11 +1,9 @@
 package edu.bbte.idde.szim2182.backend.dao;
 
-import edu.bbte.idde.szim2182.backend.datasource.DataSourceUtil;
 import edu.bbte.idde.szim2182.backend.models.Hike;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +11,14 @@ import java.util.List;
 @Slf4j
 public class JdbcHikeDao implements HikeDao {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcHikeDao.class);
+    private final DataSource dataSource;
+
+    public JdbcHikeDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     private Connection getConnection() throws SQLException {
-        return DataSourceUtil.getDataSource().getConnection();
+        return dataSource.getConnection();
     }
 
     private Hike mapRowToHike(ResultSet resultSet) throws SQLException {
@@ -42,9 +44,9 @@ public class JdbcHikeDao implements HikeDao {
                 Hike hike = mapRowToHike(result);
                 hikes.add(hike);
             }
-            LOG.info("Retrieved all hikes successfully");
+            log.info("Retrieved all hikes successfully");
         } catch (SQLException e) {
-            LOG.error("Error retrieving all hikes: {}", e.getMessage(), e);
+            log.error("Error retrieving all hikes: {}", e.getMessage(), e);
             throw new DaoException("Error retrieving all hikes: {}", e);
         }
         return hikes;
@@ -60,12 +62,12 @@ public class JdbcHikeDao implements HikeDao {
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
                     Hike hike = mapRowToHike(result);
-                    LOG.info("Found the hike with ID: {}", id);
+                    log.info("Found the hike with ID: {}", id);
                     return hike;
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error finding hike with ID {}: {}", id, e.getMessage(), e);
+            log.error("Error finding hike with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error finding hike", e);
         }
         return null;
@@ -89,7 +91,7 @@ public class JdbcHikeDao implements HikeDao {
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error inserting location: {}", e.getMessage(), e);
+            log.error("Error inserting location: {}", e.getMessage(), e);
             throw new DaoException("Error inserting location: {}", e);
         }
 
@@ -114,7 +116,7 @@ public class JdbcHikeDao implements HikeDao {
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error creating hike: {}", e.getMessage(), e);
+            log.error("Error creating hike: {}", e.getMessage(), e);
             throw new DaoException("Error inserting location: {}", e);
         }
         return null;
@@ -137,11 +139,11 @@ public class JdbcHikeDao implements HikeDao {
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
-                LOG.info("Hike updated successfully: {}", hike);
+                log.info("Hike updated successfully: {}", hike);
                 return hike;
             }
         } catch (SQLException e) {
-            LOG.error("Error updating hike with ID {}: {}", id, e.getMessage(), e);
+            log.error("Error updating hike with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error updating hike: {}", e);
         }
         return null;
@@ -162,10 +164,10 @@ public class JdbcHikeDao implements HikeDao {
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Error finding hikes with name like {}: {}", name, e.getMessage(), e);
+            log.error("Error finding hikes with name like {}: {}", name, e.getMessage(), e);
             throw new DaoException("Error finding hike: {}", e);
         }
-        LOG.info("Found hike(s) with name: {}", name);
+        log.info("Found hike(s) with name: {}", name);
         return hikes;
 
     }
@@ -179,10 +181,10 @@ public class JdbcHikeDao implements HikeDao {
             stmt.setLong(1, id);
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
-                LOG.info("Hike deleted successfully with ID {}", id);
+                log.info("Hike deleted successfully with ID {}", id);
             }
         } catch (SQLException e) {
-            LOG.error("Error deleting hike with ID {}: {}", id, e.getMessage(), e);
+            log.error("Error deleting hike with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error deleting hike: {}", e);
         }
     }

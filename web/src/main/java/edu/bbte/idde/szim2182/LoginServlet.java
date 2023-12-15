@@ -7,26 +7,32 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+@Slf4j
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
     private ApplicationConfig config;
-    private static final Logger LOG = LoggerFactory.getLogger(LoginServlet.class);
 
     @Override
     public void init() throws ServletException {
         super.init();
-        LOG.info("Initializing LoginServlet");
+        log.info("Initializing LoginServlet");
         this.config = (ApplicationConfig) getServletContext().getAttribute("config");
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        if (config == null || config.getLoginConfig() == null) {
+            log.error("Login configuration is not available");
+            req.setAttribute("errorMessage", "Login service is currently unavailable");
+            req.getRequestDispatcher("Login.jsp").forward(req, resp);
+            return;
+        }
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
