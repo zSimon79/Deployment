@@ -1,47 +1,35 @@
 package edu.bbte.idde.szim2182.backend.models;
 
+import lombok.Getter;
+import lombok.Setter;
 
+
+@Getter
+@Setter
 public class Hike extends BaseEntity {
     private String name;
     private String description;
     private Integer difficultyLevel;
-    private String startPoint;
-    private String endPoint;
+    private Location location; // Replace startPoint and endPoint with Location
+    private Long locationId;
     private Double distance;
 
     public Hike() {
         super(0L);
     }
 
-    public Hike(String name, String description, Integer difficultyLevel, String startPoint,
-                String endPoint, Double distance) {
-        super(0L);
+    public Hike(Long id, String name, String description, Integer difficultyLevel, Location location, Double distance) {
+        super(id);
         this.name = name;
         this.description = description;
         this.difficultyLevel = difficultyLevel;
-        this.startPoint = startPoint;
-        this.endPoint = endPoint;
+        this.location = location;
+        this.locationId = location.id;
         this.distance = distance;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public int getDifficultyLevel() {
         return difficultyLevel;
-    }
-
-    public String getStartPoint() {
-        return startPoint;
-    }
-
-    public String getEndPoint() {
-        return endPoint;
     }
 
     public double getDistance() {
@@ -60,12 +48,8 @@ public class Hike extends BaseEntity {
         this.difficultyLevel = difficultyLevel;
     }
 
-    public void setStartPoint(String startPoint) {
-        this.startPoint = startPoint;
-    }
-
-    public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
+    public void setLocationId(Long locationId) {
+        this.locationId = locationId;
     }
 
     public void setDistance(Double distance) {
@@ -76,13 +60,13 @@ public class Hike extends BaseEntity {
     @Override
     public String toString() {
         return "Hike{"
-                + "id=" + id
+                + "id=" + getId()
                 + ", name='" + name + '\''
                 + ", description='" + description + '\''
                 + ", difficultyLevel=" + difficultyLevel
-                + ", startPoint='" + startPoint + '\''
-                + ", endPoint='" + endPoint + '\''
+                + ", location=" + location
                 + ", distance=" + distance
                 + '}';
     }
+
 }

@@ -23,7 +23,7 @@ public class Filter extends HttpFilter {
         if (isLoggedIn) {
             chain.doFilter(req, res);
         } else {
-            res.sendRedirect("Login.jsp"); // Redirect to login page if not logged in
+            res.sendRedirect("Login.jsp");
         }
     }
 }
