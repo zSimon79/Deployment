@@ -1,32 +1,32 @@
-package edu.bbte.idde.szim2182.backend.dao;
+package edu.bbte.idde.szim2182.spring.dao.jdbc;
 
+import edu.bbte.idde.szim2182.spring.dao.DaoException;
+import edu.bbte.idde.szim2182.spring.dao.LocationDao;
+import edu.bbte.idde.szim2182.spring.models.Location;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
+
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.bbte.idde.szim2182.backend.models.Location;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.sql.DataSource;
-
 @Slf4j
+@Repository
+@Profile("jdbc")
 public class JdbcLocationDao implements LocationDao {
 
-    private final DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
-    public JdbcLocationDao(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    private Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
 
     @Override
     public List<Location> findAll() {
         List<Location> locations = new ArrayList<>();
         String sql = "SELECT * FROM locations";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet result = stmt.executeQuery()) {
 
@@ -49,7 +49,7 @@ public class JdbcLocationDao implements LocationDao {
     @Override
     public Location findById(Long id) {
         String sql = "SELECT * FROM locations WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
@@ -74,7 +74,7 @@ public class JdbcLocationDao implements LocationDao {
     @Override
     public Location create(Location location) {
         String sql = "INSERT INTO locations (startPoint, endPoint) VALUES (?, ?)";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, location.getStartPoint());
@@ -99,7 +99,7 @@ public class JdbcLocationDao implements LocationDao {
     @Override
     public Location update(Long id, Location location) {
         String sql = "UPDATE locations SET startPoint = ?, endPoint = ? WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, location.getStartPoint());
@@ -120,10 +120,19 @@ public class JdbcLocationDao implements LocationDao {
     }
 
     @Override
+    public Location saveAndFlush(Location location) {
+        if (location.getId() == null || location.getId() == 0) {
+            return create(location);
+        } else {
+            return update(location.getId(), location);
+        }
+    }
+
+    @Override
     public List<Location> findByName(String name) {
         List<Location> locations = new ArrayList<>();
         String sql = "SELECT * FROM locations WHERE name LIKE ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, "%" + name + "%");
@@ -146,7 +155,7 @@ public class JdbcLocationDao implements LocationDao {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM locations WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);

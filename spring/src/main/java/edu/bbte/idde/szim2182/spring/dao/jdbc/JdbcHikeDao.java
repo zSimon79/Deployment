@@ -1,7 +1,13 @@
-package edu.bbte.idde.szim2182.backend.dao;
+package edu.bbte.idde.szim2182.spring.dao.jdbc;
 
-import edu.bbte.idde.szim2182.backend.models.Hike;
+import edu.bbte.idde.szim2182.spring.dao.DaoException;
+import edu.bbte.idde.szim2182.spring.dao.HikeDao;
+import edu.bbte.idde.szim2182.spring.models.Hike;
+import edu.bbte.idde.szim2182.spring.models.Location;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -9,26 +15,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Repository
+@Profile("jdbc")
 public class JdbcHikeDao implements HikeDao {
 
-    private final DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
-    public JdbcHikeDao(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    private Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
+    @Autowired
+    private JdbcLocationDao jdbcLocationDao;
 
     private Hike mapRowToHike(ResultSet resultSet) throws SQLException {
         Hike hike = new Hike();
+        Long locationId = resultSet.getLong("locationId");
         hike.setId(resultSet.getLong("id"));
         hike.setName(resultSet.getString("name"));
         hike.setDescription(resultSet.getString("description"));
         hike.setDifficultyLevel(resultSet.getInt("difficultyLevel"));
-        hike.setLocationId(resultSet.getLong("locationId"));
+        hike.setLocationId(locationId);
         hike.setDistance(resultSet.getDouble("distance"));
+
+        Location location = jdbcLocationDao.findById(locationId);
+        hike.setLocation(location);
         return hike;
     }
 
@@ -36,7 +44,7 @@ public class JdbcHikeDao implements HikeDao {
     public List<Hike> findAll() {
         List<Hike> hikes = new ArrayList<>();
         String sql = "SELECT * FROM hikes";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet result = stmt.executeQuery()) {
 
@@ -55,7 +63,7 @@ public class JdbcHikeDao implements HikeDao {
     @Override
     public Hike findById(Long id) {
         String sql = "SELECT * FROM hikes WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
@@ -75,49 +83,33 @@ public class JdbcHikeDao implements HikeDao {
 
     @Override
     public Hike create(Hike hike) {
-        String locationSql = "INSERT INTO locations (startPoint, endPoint) VALUES (?, ?)";
-        long locationId = -1;
-        try (Connection conn = getConnection();
-             PreparedStatement locationStmt = conn.prepareStatement(locationSql, Statement.RETURN_GENERATED_KEYS)) {
 
-            locationStmt.setString(1, hike.getLocation().getStartPoint());
-            locationStmt.setString(2, hike.getLocation().getEndPoint());
-            int locationAffectedRows = locationStmt.executeUpdate();
-            if (locationAffectedRows > 0) {
-                try (ResultSet generatedKeys = locationStmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        locationId = generatedKeys.getLong(1);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Error inserting location: {}", e.getMessage(), e);
-            throw new DaoException("Error inserting location: {}", e);
-        }
 
         String hikeSql = "INSERT INTO hikes (name, description, difficultyLevel, locationId, distance)"
                 + " VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement hikeStmt = conn.prepareStatement(hikeSql, Statement.RETURN_GENERATED_KEYS)) {
 
             hikeStmt.setString(1, hike.getName());
             hikeStmt.setString(2, hike.getDescription());
             hikeStmt.setInt(3, hike.getDifficultyLevel());
-            hikeStmt.setLong(4, locationId);
+            hikeStmt.setLong(4, hike.getLocationId());
             hikeStmt.setDouble(5, hike.getDistance());
+            Location location = jdbcLocationDao.findById(hike.getLocationId());
 
             int hikeAffectedRows = hikeStmt.executeUpdate();
             if (hikeAffectedRows > 0) {
                 try (ResultSet generatedKeys = hikeStmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         hike.setId(generatedKeys.getLong(1));
+                        hike.setLocation(location);
                         return hike;
                     }
                 }
             }
         } catch (SQLException e) {
             log.error("Error creating hike: {}", e.getMessage(), e);
-            throw new DaoException("Error inserting location: {}", e);
+            throw new DaoException("Error creating: {}", e);
         }
         return null;
     }
@@ -127,7 +119,7 @@ public class JdbcHikeDao implements HikeDao {
     public Hike update(Long id, Hike hike) {
         String sql = "UPDATE hikes SET name = ?, description = ?, difficultyLevel = ?, locationId = ?,"
                 + " distance = ? WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, hike.getName());
@@ -150,10 +142,19 @@ public class JdbcHikeDao implements HikeDao {
     }
 
     @Override
+    public Hike saveAndFlush(Hike hike) {
+        if (hike.getId() == null || hike.getId() == 0) {
+            return create(hike);
+        } else {
+            return update(hike.getId(), hike);
+        }
+    }
+
+    @Override
     public List<Hike> findByName(String name) {
         List<Hike> hikes = new ArrayList<>();
         String sql = "SELECT * FROM hikes WHERE name LIKE ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, "%" + name + "%");
@@ -175,7 +176,7 @@ public class JdbcHikeDao implements HikeDao {
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM hikes WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
