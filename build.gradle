@@ -7,8 +7,6 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_17
     }
     dependencies {
-        implementation 'org.slf4j:slf4j-api:1.7.30'
-        runtimeOnly 'ch.qos.logback:logback-classic:1.2.3'
         implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:1.2.7'
         implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:2.0.0'
         // Add other necessary dependencies here
