@@ -1,16 +1,16 @@
 package edu.bbte.idde.szim2182.spring.dao.mem;
 
 import edu.bbte.idde.szim2182.spring.dao.LocationDao;
-import edu.bbte.idde.szim2182.spring.models.Location;
+import edu.bbte.idde.szim2182.spring.model.Location;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -27,13 +27,18 @@ public class MemLocationDao implements LocationDao {
     }
 
     @Override
-    public Location findById(Long id) {
-        log.info("Finding location with ID: {}", id);
-        return locations.get(id);
+    public Optional<Location> findById(Long id) {
+        Location location = this.locations.get(id);
+        if (location != null) {
+            log.info("Location with {} id has found!", id);
+            return Optional.of(location);
+        }
+        log.info("Location with {} id has not found!", id);
+        return Optional.empty();
     }
 
     @Override
-    public Location create(Location location) {
+    public Location save(Location location) {
         Long id = idGenerator.incrementAndGet();
         location.setId(id);
         locations.put(id, location);
@@ -42,13 +47,12 @@ public class MemLocationDao implements LocationDao {
     }
 
     @Override
-    public Location update(Long id, Location location) {
-        return locations.compute(id, (key, existingLocation) -> {
+    public void update(Long id, Location location) {
+        locations.compute(id, (key, existingLocation) -> {
             if (existingLocation != null) {
                 location.setId(id);
                 log.info("Updated location with ID {}: {}", id, location);
 
-                return location;
             }
             log.error("Location with ID {} not found for update", id);
             return null;
@@ -58,22 +62,15 @@ public class MemLocationDao implements LocationDao {
     @Override
     public Location saveAndFlush(Location location) {
         if (location.getId() == null || location.getId() == 0) {
-            return create(location);
+            return save(location);
         } else {
-            return update(location.getId(), location);
+            update(location.getId(), location);
+            return location;
         }
     }
 
     @Override
-    public List<Location> findByName(String name) {
-        log.info("Finding locations with name like: {}", name);
-        return locations.values().stream()
-                .filter(location -> location.getStartPoint().contains(name) || location.getEndPoint().contains(name))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void delete(Long id) {
+    public void deleteById(Long id) {
         if (locations.containsKey(id)) {
             locations.remove(id);
             log.info("Deleted location with ID {}", id);

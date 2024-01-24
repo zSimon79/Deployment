@@ -2,7 +2,7 @@ package edu.bbte.idde.szim2182.spring.mapper;
 
 import edu.bbte.idde.szim2182.spring.dto.HikeInDto;
 import edu.bbte.idde.szim2182.spring.dto.HikeOutDto;
-import edu.bbte.idde.szim2182.spring.models.Hike;
+import edu.bbte.idde.szim2182.spring.model.Hike;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 

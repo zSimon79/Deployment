@@ -1,19 +1,20 @@
 package edu.bbte.idde.szim2182.spring.dao;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface Dao<T> {
     List<T> findAll();
 
-    T findById(Long id);
+    Optional<T> findById(Long id);
 
-    T create(T entity);
+    T save(T entity);
 
-    T update(Long id, T entity);
+    void update(Long id, T entity);
 
-    void delete(Long id);
+    void deleteById(Long id);
 
     T saveAndFlush(T entity);
 
-
+    //void deleteAll(List<Hike> hikes);
 }

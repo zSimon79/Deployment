@@ -2,7 +2,7 @@ package edu.bbte.idde.szim2182.spring.mapper;
 
 import edu.bbte.idde.szim2182.spring.dto.LocationInDto;
 import edu.bbte.idde.szim2182.spring.dto.LocationOutDto;
-import edu.bbte.idde.szim2182.spring.models.Location;
+import edu.bbte.idde.szim2182.spring.model.Location;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 

@@ -1,13 +1,14 @@
 package edu.bbte.idde.szim2182.spring.dao.mem;
 
 import edu.bbte.idde.szim2182.spring.dao.HikeDao;
-import edu.bbte.idde.szim2182.spring.models.Hike;
+import edu.bbte.idde.szim2182.spring.model.Hike;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -27,13 +28,18 @@ public class MemHikeDao implements HikeDao {
     }
 
     @Override
-    public Hike findById(Long id) {
-        log.info("Finding hike with ID: {}", id);
-        return hikes.get(id);
+    public Optional<Hike> findById(Long id) {
+        Hike hike = this.hikes.get(id);
+        if (hike != null) {
+            log.info("Hike with {} id has found!", id);
+            return Optional.of(hike);
+        }
+        log.info("Hike with {} id has not found!", id);
+        return Optional.empty();
     }
 
     @Override
-    public Hike create(Hike hike) {
+    public Hike save(Hike hike) {
         Long id = idGenerator.incrementAndGet();
         hike.setId(id);
         hikes.put(id, hike);
@@ -42,12 +48,12 @@ public class MemHikeDao implements HikeDao {
     }
 
     @Override
-    public Hike update(Long id, Hike hike) {
-        return hikes.compute(id, (key, existingLocation) -> {
+    public void update(Long id, Hike hike) {
+        hikes.compute(id, (key, existingLocation) -> {
             if (existingLocation != null) {
                 hike.setId(id);
                 log.info("Updated hike with ID {}: {}", id, hike);
-                return hike;
+
             }
             log.error("Hike with ID {} not found for update", id);
             return null;
@@ -57,9 +63,10 @@ public class MemHikeDao implements HikeDao {
     @Override
     public Hike saveAndFlush(Hike hike) {
         if (hike.getId() == null || hike.getId() == 0) {
-            return create(hike);
+            return save(hike);
         } else {
-            return update(hike.getId(), hike);
+            update(hike.getId(), hike);
+            return hike;
         }
     }
 
@@ -72,7 +79,15 @@ public class MemHikeDao implements HikeDao {
     }
 
     @Override
-    public void delete(Long id) {
+    public List<Hike> findByLocationId(Long locationId) {
+        log.info("Finding hikes for location ID: {}", locationId);
+        return hikes.values().stream()
+                .filter(hike -> hike.getLocation() != null && hike.getLocation().getId().equals(locationId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(Long id) {
         if (hikes.containsKey(id)) {
             hikes.remove(id);
             log.info("Deleted hike with ID {}", id);
@@ -80,4 +95,5 @@ public class MemHikeDao implements HikeDao {
             log.error("Hike with ID {} not found for deletion", id);
         }
     }
+
 }
