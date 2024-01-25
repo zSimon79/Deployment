@@ -5,10 +5,8 @@ import edu.bbte.idde.szim2182.spring.dao.LocationDao;
 import edu.bbte.idde.szim2182.spring.dto.LocationInDto;
 import edu.bbte.idde.szim2182.spring.dto.LocationOutDto;
 import edu.bbte.idde.szim2182.spring.mapper.LocationMapper;
-import edu.bbte.idde.szim2182.spring.models.Location;
+import edu.bbte.idde.szim2182.spring.model.Location;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +19,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/locations")
 public class LocationController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocationController.class);
 
     @Autowired
     private LocationDao locationDao;
@@ -46,7 +42,7 @@ public class LocationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<LocationOutDto> findById(@PathVariable("id") Long id) {
-        Optional<Location> location = Optional.ofNullable(locationDao.findById(id));
+        Optional<Location> location = locationDao.findById(id);
         if (location.isEmpty()) {
             throw new NotFoundException();
         }
@@ -56,7 +52,7 @@ public class LocationController {
     @PutMapping("/{id}")
     public ResponseEntity<LocationOutDto> update(@PathVariable("id") Long id,
                                                  @RequestBody @Valid LocationInDto locationDto) {
-        Optional<Location> existingLocation = Optional.ofNullable(locationDao.findById(id));
+        Optional<Location> existingLocation = locationDao.findById(id);
         if (existingLocation.isEmpty()) {
             throw new NotFoundException();
         }
@@ -68,10 +64,10 @@ public class LocationController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") Long id) {
-        Optional<Location> location = Optional.ofNullable(locationDao.findById(id));
+        Optional<Location> location = locationDao.findById(id);
         if (location.isEmpty()) {
             throw new NotFoundException();
         }
-        locationDao.delete(id);
+        locationDao.deleteById(id);
     }
 }

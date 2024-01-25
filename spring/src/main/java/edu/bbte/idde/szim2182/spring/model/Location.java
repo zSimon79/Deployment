@@ -1,16 +1,24 @@
-package edu.bbte.idde.szim2182.spring.models;
+package edu.bbte.idde.szim2182.spring.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "locations")
 public class Location extends BaseEntity {
+    @Column(nullable = false)
     private String startPoint;
+
+    @Column(nullable = false)
     private String endPoint;
 
     public Location() {
-        super(0L);
+        super();
     }
 
     public Location(String startPoint, String endPoint) {

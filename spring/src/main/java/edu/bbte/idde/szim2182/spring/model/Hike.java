@@ -1,21 +1,31 @@
-package edu.bbte.idde.szim2182.spring.models;
+package edu.bbte.idde.szim2182.spring.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 
 @Getter
 @Setter
+@Entity
+@Table(name = "hikes")
 public class Hike extends BaseEntity {
+
+
+    @Column(nullable = false)
     private String name;
     private String description;
     private Integer difficultyLevel;
-    private Location location; // Replace startPoint and endPoint with Location
-    private Long locationId;
+
+    @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+    @ManyToOne
+    @JoinColumn(name = "locationId")
+    private Location location;
     private Double distance;
 
     public Hike() {
-        super(0L);
+        super();
     }
 
     public Hike(Long id, String name, String description, Integer difficultyLevel, Location location, Double distance) {
@@ -24,7 +34,6 @@ public class Hike extends BaseEntity {
         this.description = description;
         this.difficultyLevel = difficultyLevel;
         this.location = location;
-        this.locationId = location.id;
         this.distance = distance;
     }
 
@@ -48,9 +57,6 @@ public class Hike extends BaseEntity {
         this.difficultyLevel = difficultyLevel;
     }
 
-    public void setLocationId(Long locationId) {
-        this.locationId = locationId;
-    }
 
     public void setDistance(Double distance) {
         this.distance = distance;

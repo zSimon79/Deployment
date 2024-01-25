@@ -2,7 +2,7 @@ package edu.bbte.idde.szim2182.spring.dao.jdbc;
 
 import edu.bbte.idde.szim2182.spring.dao.DaoException;
 import edu.bbte.idde.szim2182.spring.dao.LocationDao;
-import edu.bbte.idde.szim2182.spring.models.Location;
+import edu.bbte.idde.szim2182.spring.model.Location;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -12,10 +12,11 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
-@Repository
 @Profile("jdbc")
+@Repository
 public class JdbcLocationDao implements LocationDao {
 
     @Autowired
@@ -47,7 +48,7 @@ public class JdbcLocationDao implements LocationDao {
 
 
     @Override
-    public Location findById(Long id) {
+    public Optional<Location> findById(Long id) {
         String sql = "SELECT * FROM locations WHERE id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -61,18 +62,18 @@ public class JdbcLocationDao implements LocationDao {
                     location.setEndPoint(result.getString("endPoint"));
                     log.info("Found the location with ID: {}", id);
 
-                    return location;
+                    return Optional.of(location);
                 }
             }
         } catch (SQLException e) {
             log.error("Error finding location with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error finding location: {}", e);
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public Location create(Location location) {
+    public Location save(Location location) {
         String sql = "INSERT INTO locations (startPoint, endPoint) VALUES (?, ?)";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -97,7 +98,7 @@ public class JdbcLocationDao implements LocationDao {
     }
 
     @Override
-    public Location update(Long id, Location location) {
+    public void update(Long id, Location location) {
         String sql = "UPDATE locations SET startPoint = ?, endPoint = ? WHERE id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -109,51 +110,26 @@ public class JdbcLocationDao implements LocationDao {
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
                 log.info("Location updated successfully: {}", location);
-                return location;
             }
         } catch (SQLException e) {
             log.error("Error updating location with ID {}: {}", id, e.getMessage(), e);
             throw new DaoException("Error updating location: {}", e);
 
         }
-        return null;
     }
 
     @Override
     public Location saveAndFlush(Location location) {
         if (location.getId() == null || location.getId() == 0) {
-            return create(location);
+            return save(location);
         } else {
-            return update(location.getId(), location);
+            update(location.getId(), location);
+            return location;
         }
     }
 
     @Override
-    public List<Location> findByName(String name) {
-        List<Location> locations = new ArrayList<>();
-        String sql = "SELECT * FROM locations WHERE name LIKE ?";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, "%" + name + "%");
-            try (ResultSet result = stmt.executeQuery()) {
-                if (result.next()) {
-                    Location location = new Location();
-                    location.setId(result.getLong("id"));
-                    location.setStartPoint(result.getString("startPoint"));
-                    location.setEndPoint(result.getString("endPoint"));
-                    locations.add(location);
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Error finding location with name {}: {}", name, e.getMessage(), e);
-            throw new DaoException("Error finding location: {}", e);
-        }
-        return locations;
-    }
-
-    @Override
-    public void delete(Long id) {
+    public void deleteById(Long id) {
         String sql = "DELETE FROM locations WHERE id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -168,4 +144,21 @@ public class JdbcLocationDao implements LocationDao {
             throw new DaoException("Error deleting location: {}", e);
         }
     }
+
+    //    @Override
+    //    public void deleteAll(List<Hike> hikes) {
+    //        log.info("Deleting all locations");
+    //        String sql = "DELETE FROM locations";
+    //        try (Connection conn = dataSource.getConnection();
+    //             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    //
+    //            int affectedRows = stmt.executeUpdate();
+    //            if (affectedRows > 0) {
+    //                log.info("All locations deleted successfully");
+    //            }
+    //        } catch (SQLException e) {
+    //            log.error("Error deleting all locations: {}", e.getMessage(), e);
+    //            throw new DaoException("Error deleting all locations: {}", e);
+    //        }
+    //    }
 }
