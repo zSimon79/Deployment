@@ -1,4 +1,3 @@
-include 'backend', 'web'
 rootProject.name = 'szim2182-idde'
 include 'spring'
 

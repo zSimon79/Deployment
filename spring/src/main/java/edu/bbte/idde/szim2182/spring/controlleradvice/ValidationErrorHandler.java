@@ -1,6 +1,6 @@
 package edu.bbte.idde.szim2182.spring.controlleradvice;
 
-import edu.bbte.idde.szim2182.spring.controller.HikeController;
+import edu.bbte.idde.szim2182.spring.adapter.in.web.HikeController;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,8 +1,8 @@
 package edu.bbte.idde.szim2182.spring.mapper;
 
-import edu.bbte.idde.szim2182.spring.dto.HikeInDto;
-import edu.bbte.idde.szim2182.spring.dto.HikeOutDto;
-import edu.bbte.idde.szim2182.spring.model.Hike;
+import edu.bbte.idde.szim2182.spring.application.port.in.HikeInDto;
+import edu.bbte.idde.szim2182.spring.application.port.out.HikeOutDto;
+import edu.bbte.idde.szim2182.spring.application.domain.entity.Hike;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 

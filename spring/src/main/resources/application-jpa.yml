@@ -1,9 +1,8 @@
 spring:
   datasource:
     username: Servlet
-    password: 1234
-    url: jdbc:mysql://localhost:3306/HikeServlet
-    connectionNumber: 10
+    password: 1234%Abcd
+    url: String url="jdbc:mysql://hikes.mysql.database.azure.com:3306/hikes?useSSL=true";myDbConn=DriverManager.getConnection(url, "Servlet", "1234%Abcd");
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
@@ -12,3 +11,4 @@ spring:
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      dialect: org.hibernate.dialect.MySQL5InnoDBDialect
